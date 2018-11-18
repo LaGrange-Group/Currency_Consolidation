@@ -7,6 +7,9 @@ class Consolidation_Binance:
 
     def run():
 
+    # Scan database for two (2) day consolidation -
+    # 5060 represents x which is the length of time you are checking past data (each batch represents data capture 30 sec apart)
+    # 0.015 represents y which is the percentage differance from price x amount of days ago
         def scan_for_consolidation():
             consolidation_scan_query = """INSERT INTO consolidation (TOKEN, BATCH_KEY)
                                             SELECT A.TICKER AS TOKEN
@@ -40,20 +43,17 @@ class Consolidation_Binance:
             cursor.execute(consolidation_scan_query)
             conn.commit()
 
+    # Send results to telegram channel
         def send_tele_sig(msg):
-        	"""
-        	Send a mensage to a telegram user specified on chatId
-        	chat_id must be a number!
-        	"""
         	bot = telegram.Bot(token='###')
         	bot.sendMessage(chat_id='@consolidationbinance', text=msg)
 
-    # Truncate daydoji table
-        def truncate_three_day_doji_table():
+    # Truncate consolidation table
+        def truncate_consolidation_table():
             cursor.execute("TRUNCATE TABLE consolidation")
             conn.commit()
 
-        # Get highest BATCH_KEY
+    # Get highest BATCH_KEY
         def set_max_consolidation_batch():
             cursor.execute("SELECT MAX(BATCH_KEY) AS maximum FROM consolidation")
             result = cursor.fetchall()
@@ -61,7 +61,7 @@ class Consolidation_Binance:
                 batch_id_fn = (i[0])
             return batch_id_fn
 
-        # Set python variable equal to the highest BATCH_KEY column value in batches table
+    # Set python variable equal to the highest BATCH_KEY column value in batch table
         def set_new_batchid():
             cursor.execute("SELECT MAX(BATCH_KEY) AS maximum FROM batch")
             result = cursor.fetchall()
